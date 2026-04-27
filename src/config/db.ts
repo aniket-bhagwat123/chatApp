@@ -10,4 +10,4 @@ const connectDB = async (url: string) => {
   }
 };
 
-export default connectDB; 
+export default connectDB;
