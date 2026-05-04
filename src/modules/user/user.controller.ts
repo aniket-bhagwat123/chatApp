@@ -1,5 +1,24 @@
 import { Request, Response } from "express";
-import { createUserService, updateUserService, deleteUserService } from "./user.services";
+import { createUserService, updateUserService, deleteUserService, userListService } from "./user.services";
+
+// USER LIST CONTROLLER
+export const userList = async (req: Request, res: Response) => {
+  try {
+    const users = await userListService(req.query);
+
+    if(!users) {
+        res.status(404).json({ error: 'No users found' });
+    };
+
+    res.status(200).json({
+        success: true,
+        message: 'User list retrieved successfully', 
+        data: users,
+    });
+  } catch (error: unknown) {
+    res.status(500).json({ error: (error as { message?: string }).message || 'Internal server error' });
+  }
+};
 
 // CREATE USER CONTROLLER
 export const createUser = async (req: Request, res: Response) => {

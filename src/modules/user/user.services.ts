@@ -3,6 +3,48 @@ import bcrypt from 'bcryptjs';
 import { IUser } from "./user.interface";
 import { generateJwtToken } from "../../utils/generateJwtToken";
 
+// USER LIST SERVICE
+export const userListService = async (params: any) => {
+    const { name, email, page, limit } = params;
+
+    const filters = {} as any;
+
+    if (name) {
+        filters['name'] = { $regex: name, $options: 'i' };
+    };
+
+    if (email) {
+        filters['email'] = { $regex: email, $options: 'i' };
+    };
+
+    if(page && limit) {
+      const pageNumber = parseInt(page, 10) || 1;
+      const limitNumber = parseInt(limit, 10) || 10;
+      const skip = (pageNumber - 1) * limitNumber;
+
+      const users = await User.find(filters).skip(skip).limit(limitNumber);
+
+      return {
+        data: users,
+        pagination: {
+            total: await User.countDocuments(filters),
+            page: pageNumber,
+            limit: limitNumber,
+        }
+      }
+    };
+
+    const users = await User.find(filters);
+    return {
+        data: users,
+        pagination: {
+            total: await User.countDocuments(filters),
+            page: page ? parseInt(page, 10) : 1,
+            limit: limit ? parseInt(limit, 10) : 10,
+        }
+    };
+};
+
 // CREATE USER SERVICE
 export const createUserService = async (userData: IUser) => {
     const { email, password, name } = userData;

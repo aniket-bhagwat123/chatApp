@@ -1,5 +1,6 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 import User from '../modules/user/user.model';
+import { verifyJwtToken } from './generateJwtToken';
 
 export const tokenMiddleware = async (req: any, res: any, next: any) => {
     const authHeader = req.headers['authorization'];
@@ -10,7 +11,7 @@ export const tokenMiddleware = async (req: any, res: any, next: any) => {
     };
     
     try {
-        const decodedToken = await jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+        const decodedToken = verifyJwtToken(token) as JwtPayload;
         const userValid = await User.findById(decodedToken.userId);
 
         if (!userValid) {
@@ -20,6 +21,6 @@ export const tokenMiddleware = async (req: any, res: any, next: any) => {
         req.user = userValid; // Attach user info to request object
         next();
     } catch (error: unknown) {
-        res.status(403).json({ error: (error as { message?: string }).message || 'Invalid token' });
+        res.status(403).json({ error: (error as { message?: string }).message || 'Invalid token or token expired' });
     }
 };
